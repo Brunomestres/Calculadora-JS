@@ -23,6 +23,12 @@ class calcController{
         
         
     }
+    addEventListenerAll(elements,events,fnt)
+    {
+        events.split(' ').forEach(event=>{
+            elements.addEventListener(event,fnt,false)
+;        });
+    }
 
     initButtonsEvents()
     {
@@ -32,8 +38,12 @@ class calcController{
         
         
         buttons.forEach((btn, index) => {
-            btn.addEventListener('click', e=>{
+            this.addEventListenerAll(btn,'click drag', e=>{
                 console.log(btn.className.baseVal.replace('btn-',''));
+            });
+
+            this.addEventListenerAll(btn,'mouseover mouseup mousedown',e=>{
+                btn.style.cursor = 'pointer';
             });
         });
     }
