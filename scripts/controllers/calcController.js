@@ -2,6 +2,9 @@ class calcController{
 
     constructor()
     {
+        this._lastNumber = '';
+        this._lastOperator = '';
+
         this._displayCalcEl = document.querySelector("#display");
         this._dateEl = document.querySelector("#data");
         this._timeEl = document.querySelector("#hora");
@@ -22,6 +25,7 @@ class calcController{
             this.setDisplayDateTime();
         },1000);
         
+        this.setLastNumberToDisplay();
         
     }
     addEventListenerAll(elements,events,fnt)
@@ -33,11 +37,13 @@ class calcController{
 
     clearAll()
     {
-
+        this._operation = [];
+        this.setLastNumberToDisplay();
     }
     clearEntry()
     {
-
+        this._operation.pop();
+        this.setLastNumberToDisplay();
     }
     setError()
     {
@@ -61,6 +67,78 @@ class calcController{
         
 
     }
+    pushOperator(value)
+    {
+        this._operation.push(value);
+
+        if(this._operation.length > 3)
+        {
+            this.calc();
+        }
+    }
+    getResult()
+    {
+        return eval(this._operation.join(""));
+    }
+    calc()
+    {
+        let last = '';
+
+
+        this._lastOperator = this.getLastItem();
+
+
+        if(this._operation.length > 3){
+            last = this._operation.pop();
+            
+            this._lastNumber = this.getResult();
+        }else if(this._operation.length == 3)
+        {
+            this._lastNumber = this.getLastItem(false);
+        }
+
+
+        console.log(this._lastOperator);
+        console.log(this._lastNumber);
+
+        let result = this.getResult();
+        if(last =='%')
+        {
+            result /= 100;
+            this._operation = [result];
+        }else{
+            this._operation = [result];
+            if(last) this._operation.push(last);
+        }
+        
+        this.setLastNumberToDisplay();
+    }
+
+    getLastItem(isOperator = true)
+    {
+        let lastItem;
+        for(let i = this._operation.length - 1; i >= 0; i--)
+        {
+            
+
+                if(this.isOperator(this._operation[i]) == isOperator)
+                {
+                    lastItem = this._operation[i];
+                    break;
+                }    
+            
+            
+        }
+        return lastItem;
+    }
+    setLastNumberToDisplay()
+    {
+        let lastNumber = this.getLastItem(false) ;
+        
+
+        if(!lastNumber) lastNumber = 0;
+        this.displayCalc = lastNumber;
+    }
 
     addOperation(value)
     {
@@ -74,26 +152,34 @@ class calcController{
                 
                 console.log(value);
             }else{
-                this._operation.push(value);
+                this.pushOperator(value);
+                this.setLastNumberToDisplay();
             }
         }else{
-            let newValue = this.getLastOperation().toString() + value.toString();
-            this.setLastOperation(parseInt(newValue));
+            if(this.isOperator(value))
+            {
+                this.pushOperator(value);
+            }else{
+                let newValue = this.getLastOperation().toString() + value.toString();
+                this.setLastOperation(parseInt(newValue));
+                this.setLastNumberToDisplay();
+            }
+            
         }
 
         
-        console.log(this._operation);
+        
     }
 
     execBtn(value)
     {
         switch (value){
             case 'ac':
-             
+                this.clearAll();
                 break;
 
             case 'ce':
-            
+                this.clearEntry();
                 break;
             case 'soma':
                     this.addOperation('+');
@@ -111,7 +197,7 @@ class calcController{
                     this.addOperation('%');
                 break;
             case 'igual':
-                    
+                this.calc();
                 break;
             case 'ponto':
                     this.addOperation('.');
@@ -138,7 +224,7 @@ class calcController{
     {
         let buttons = document.querySelectorAll('#buttons > g, #parts > g');
 
-        console.log(buttons);
+        
         
         
         buttons.forEach((btn, index) => {
